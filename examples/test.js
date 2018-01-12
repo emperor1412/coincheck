@@ -41,7 +41,7 @@ function checkCoin(coinID, order, callback) {
                 if(isBTCPair) {
                     var item = {};
                     item.san = san;
-                    item.price = price * 1;
+                    item.price = (price * 1).toFixed(10);
                     data.push(item);
                     if(item.price < coinData.min) {
                         coinData.min = item.price;
