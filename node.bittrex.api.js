@@ -258,6 +258,16 @@ var NodeBittrexApi = function() {
                     ((opts.verbose) ? console.log('Subscribed to ' + market) : '');
                   }
                 });
+
+                wsclient.call('CoreHub', 'QueryExchangeState', market).done(function(err, result) {
+                  if (err) {
+                    return console.error(err);
+                  }
+
+                  if (result === true) {
+                    ((opts.verbose) ? console.log('Subscribed to ' + market) : '');
+                  }
+                });
               });
             }
             ((opts.verbose) ? console.log('Websocket connected') : '');
