@@ -75,6 +75,7 @@ var Test2 = (function() {
                                     market.high = obj.result[obj.result.length - 1];
                                     market.totalBuy = 0;
                                     market.totalSell = 0;
+                                    market.buySellFactor = 0;
 
                                     if (today.BV > 10) {
                                         allMarkets.push(market);

@@ -4,7 +4,8 @@
 const bittrex = require('../node.bittrex.api');
 const APIKEY = 'KEY';
 const APISECRET = 'SECRET';
-
+var json2csv = require('json2csv');
+var fs = require('fs');
 
 bittrex.options({
     'apikey': APIKEY,
@@ -36,13 +37,12 @@ test2.getAllMarkets().then(function (allMarkets) {
     //console.log(allMarkets);
 
     console.log('Getting orderbooks ....');
-    var promises = [];
+    //var promises = [];
 
-    promises.concat(allMarkets.map(function (market) {
-        if (market.name.includes('BTC-ARDR') || !market.name.includes('BTC')) {
+    var promises = allMarkets.map(function (market) {
+        if (market.name.includes('BTC-ARDR')) {
             return new Promise(resolve => resolve());
         }
-
 
         return new Promise(function (res, rej) {
             bittrex.getorderbook({market: market.name, type: "buy"}, function (data) {
@@ -56,13 +56,30 @@ test2.getAllMarkets().then(function (allMarkets) {
                 var totalBuy = calculateSum(data.result);
                 //console.log('totalBuy: ' + totalBuy);
                 market.totalBuy = totalBuy;
-                res();
+
+                bittrex.getorderbook({market: market.name, type: "sell"}, function (data) {
+                    //console.log(market.name + ": sell: " + data.result );
+                    if(data === undefined || data.result === null) {
+                        console.log(market.name  + ": Null sell");
+                        rej();
+                        return;
+                    }
+
+                    var totalSell = calculateSum(data.result);
+
+                    market.totalSell = totalSell;
+                    market.buySellFactor = totalBuy / totalSell;
+                    console.log(market);
+                    res();
+                });
+
             });
         });
-    }));
+    });
 
+    /*
     promises.concat(allMarkets.map(function (market) {
-        if (market.name.includes('BTC-ARDR') || !market.name.includes('BTC')) {
+        if (market.name.includes('BTC-ARDR')) {
             return new Promise(resolve => resolve());
         }
 
@@ -82,9 +99,10 @@ test2.getAllMarkets().then(function (allMarkets) {
             });
         });
     }));
+*/
 
-    Promise.All(promise).then(function () {
-        var fields = ['name', 'totalDays', 'diffLow', 'diffHigh', 'today', 'low', 'high', 'totalBuy', 'totalSell'];
+    Promise.all(promises).then(function () {
+        var fields = ['name', 'totalDays', 'diffLow', 'diffHigh', 'today', 'low', 'high', 'totalBuy', 'totalSell', 'buySellFactor'];
 
         //console.log(JSON.stringify(allMarkets));
 
